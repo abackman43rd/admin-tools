@@ -1,0 +1,25 @@
+#!/usr/bin/env zsh
+
+# Dumps a WordPress database and edits the dump to make it appropriate for importing into a development environment.
+# USAGE:
+# wp-get-dev-copy <source-db-host> <source-db-name> <source-db-user> <source-db-password-file> <target-domain> <target-table-prefix>
+
+source_host=$1
+db_name=$2
+db_username=$3
+db_password_file=$4
+
+if [[ -n $db_password_file ]]; then
+  if [[ -e $db_password_file ]]; then
+    db_password=`cat $db_password_file`
+  else
+    echo "Password file does not exist."
+    exit 1
+  fi
+else
+  echo "Password file is required."
+  exit 1
+fi
+
+datestamp=`date +%Y-%m-%d`
+echo "mysqldump --add-drop-table -h $source_host -u $db_username --password=$(<$db_password_file) $db_name >" "${source_host}-${db_name}-${datestamp}.sql"
